@@ -81,6 +81,16 @@ export default function Header() {
           YapSports
         </Link>
 
+        {/* Navigation Links */}
+        <div className="flex items-center space-x-6 ml-8">
+          <Link href="/" className="text-grey-400 hover:text-white transition-colors">
+            Home
+          </Link>
+          <Link href="/game" className="text-grey-400 hover:text-white transition-colors">
+            Game
+          </Link>
+        </div>
+
         {/* Search Bar */}
         <div className="relative w-full max-w-md mx-4">
           <form onSubmit={handleSearch}>
