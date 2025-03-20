@@ -34,5 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-# cursor
-.cursor/
+# Keep cursor rules, but ignore other cursor files
+.cursor/*
+!.cursor/rules/

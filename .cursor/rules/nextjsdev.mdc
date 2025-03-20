@@ -1,0 +1,14 @@
+---
+description: Guidelines for Next.js dev
+globs: 
+alwaysApply: false
+---
+# Next.js Development Focus
+
+- Keep components under 100 lines of code for better maintainability
+- Use the Pages Router for simpler projects, App Router for more complex routing needs
+- Place all Supabase database calls in dedicated service files
+- Implement proper loading states for all data fetching operations
+- Create custom hooks for reusable Supabase functionality
+- Use TypeScript for all new files
+- Document all component props with JSDoc or TypeScript interfaces

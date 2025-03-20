@@ -1,0 +1,22 @@
+---
+description: This is the projects tech stack
+globs: 
+alwaysApply: false
+---
+# Technical Stack
+
+- Next.js for the frontend framework
+- pnpm as the package manager
+- Supabase for user authentication and database
+- @balldontlie/sdk for sports data integration
+- TypeScript for all code files
+- Tailwind CSS for styling
+- React Query for data fetching
+- Vercel for hosting and deployment
+- ESLint + Prettier for code quality
+- Jest for unit testing
+- App Router for Next.js routing
+- Server components for data-heavy operations
+- Client components for interactive UI elements
+- Edge functions for API routes
+- Row-Level Security for Supabase tables
