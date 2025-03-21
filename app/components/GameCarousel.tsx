@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Game } from '../types/game';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface GamesResponse {
@@ -28,6 +28,7 @@ const GameCarousel = () => {
   const [isToday, setIsToday] = useState<boolean>(true);
   const [showCalendar, setShowCalendar] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   
   // Carousel state
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -39,8 +40,18 @@ const GameCarousel = () => {
   const fetchGames = async (date?: string) => {
     try {
       setLoading(true);
-      const url = date ? `/api/games?date=${date}` : '/api/games';
-      const response = await fetch(url);
+      // Add timestamp to prevent caching
+      const timestamp = Date.now();
+      const url = date ? `/api/games?date=${date}&t=${timestamp}` : `/api/games?t=${timestamp}`;
+      
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch games');
@@ -416,6 +427,26 @@ const GameCarousel = () => {
     }
   };
 
+  // Function to navigate to the box score page
+  const navigateToBoxScore = (game: Game) => {
+    const gameId = game.id;
+    const isLive = isGameLive(game);
+    const isFinished = isGameFinished(game);
+    
+    // Add timestamp for cache busting
+    const timestamp = Date.now();
+    
+    // Navigate to the appropriate box score page based on game status
+    if (isLive) {
+      router.push(`/games/${gameId}/live?t=${timestamp}`);
+    } else if (isFinished) {
+      router.push(`/games/${gameId}/boxscore?t=${timestamp}`);
+    } else {
+      // For upcoming games, we can still navigate to a pre-game page
+      router.push(`/games/${gameId}/preview?t=${timestamp}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-charcoal-700 w-[100vw] -mx-[calc((100vw-100%)/2)] -mt-8 mb-6">
@@ -692,7 +723,8 @@ const GameCarousel = () => {
                   return (
                     <div 
                       key={game.id}
-                      className="flex flex-col w-[calc(100%/8)] min-w-[130px] border-r border-charcoal-500 h-[110px]"
+                      className="flex flex-col w-[calc(100%/8)] min-w-[130px] border-r border-charcoal-500 h-[110px] cursor-pointer hover:bg-charcoal-600 transition-colors duration-150"
+                      onClick={() => navigateToBoxScore(game)}
                     >
                       {/* Game status header */}
                       <div className="px-2 py-1 text-center border-b border-charcoal-500">

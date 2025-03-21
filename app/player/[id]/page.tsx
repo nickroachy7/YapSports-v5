@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Player } from '../../types/player';
 import GameLog from '../../components/player/GameLog';
-import NextGame from '../../components/player/NextGame';
 
 interface SeasonAverages {
   games_played: number;
@@ -324,9 +323,6 @@ export default function PlayerProfile() {
       </div>
 
       <div className="container mx-auto px-4 py-8 relative">
-        {/* Next Game Component */}
-        {player && <NextGame player={player} />}
-
         {/* Player Profile Header */}
         {player ? (
           <div className="bg-charcoal-700 rounded-xl shadow-lg p-6 mb-8">

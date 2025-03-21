@@ -25,7 +25,10 @@ export async function GET(request: Request) {
     const dateParam = searchParams.get('date');
     const formattedDate = dateParam || todayFormatted;
     
-    console.log(`Fetching games for date: ${formattedDate}`);
+    // Get a timestamp for cache busting
+    const timestamp = searchParams.get('t') || Date.now().toString();
+    
+    console.log(`Fetching games for date: ${formattedDate} (timestamp: ${timestamp})`);
     
     // Fetch games for the specified date
     const gamesResponse = await api.nba.getGames({
@@ -52,20 +55,34 @@ export async function GET(request: Request) {
       
       console.log(`Found ${tomorrowGamesResponse.data.length} games for tomorrow`);
       
-      return NextResponse.json({ 
+      const response = NextResponse.json({ 
         data: tomorrowGamesResponse.data,
         meta: tomorrowGamesResponse.meta,
         date: tomorrowFormatted,
         isToday: false
       });
+      
+      // Add cache control headers to prevent caching
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      
+      return response;
     }
     
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       data: gamesResponse.data,
       meta: gamesResponse.meta,
       date: formattedDate,
       isToday: formattedDate === todayFormatted
     });
+    
+    // Add cache control headers to prevent caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error) {
     console.error('Error fetching games:', error);
     return NextResponse.json(

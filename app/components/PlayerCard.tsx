@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import PlayerGameStatus from './PlayerGameStatus';
 
 interface Game {
   id: number;
@@ -19,6 +20,9 @@ interface Game {
   };
   visitor_team_score: number;
   played: boolean;
+  status?: string;
+  time?: string;
+  period?: number;
   stats: {
     pts: number;
     reb: number;
@@ -57,9 +61,11 @@ interface PlayerCardProps {
     };
   };
   recentGames?: Game[];
+  collectorValue?: number;
+  sellValue?: number;
 }
 
-export default function PlayerCard({ player, recentGames = [] }: PlayerCardProps) {
+export default function PlayerCard({ player, recentGames = [], collectorValue = 0, sellValue = 0 }: PlayerCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleClick = () => {
@@ -166,7 +172,31 @@ export default function PlayerCard({ player, recentGames = [] }: PlayerCardProps
           style={{ backfaceVisibility: 'hidden' }}
         >
           {/* Player Photo Area */}
-          <div className="h-[60%] bg-charcoal-600 flex items-center justify-center">
+          <div className="h-[70%] bg-charcoal-600 flex items-center justify-center relative">
+            {/* Team logo placeholder with jersey number below it */}
+            <div className="absolute top-3 left-3 flex flex-col items-center">
+              <div className="w-12 h-12 bg-charcoal-700 rounded-full flex items-center justify-center mb-1">
+                <span className="text-grey-500 text-xs font-bold">{player.team.full_name.substring(0, 3).toUpperCase()}</span>
+              </div>
+              {player.jersey_number && (
+                <div className="mt-1">
+                  <span className="text-white text-xs font-semibold">#{player.jersey_number}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Collector and sell values in top right */}
+            <div className="absolute top-3 right-3 flex flex-col items-end">
+              <div className="mb-1 bg-charcoal-700 rounded-md px-2 py-1 flex items-center">
+                <span className="text-yellow-500 text-xs mr-1">★</span>
+                <span className="text-white text-xs font-semibold">{collectorValue}</span>
+              </div>
+              <div className="bg-charcoal-700 rounded-md px-2 py-1 flex items-center">
+                <span className="text-green-500 text-xs mr-1">$</span>
+                <span className="text-white text-xs font-semibold">{sellValue}</span>
+              </div>
+            </div>
+            
             <div className="text-grey-500">
               <svg 
                 className="w-24 h-24"
@@ -185,17 +215,22 @@ export default function PlayerCard({ player, recentGames = [] }: PlayerCardProps
             </div>
           </div>
 
-          {/* Player Info */}
-          <div className="p-6 flex flex-col items-center">
-            <h2 className="text-2xl font-bold text-white text-center mb-2 line-clamp-2 min-h-[4rem]">
-              {player.first_name} {player.last_name}
-            </h2>
-            <div className="text-grey-400 text-lg mb-2">
-              {player.position || 'N/A'}
+          {/* Player Info - Reduced height */}
+          <div className="p-4 flex flex-col items-center justify-center h-[30%]">
+            <div className="flex items-center justify-center gap-2 mb-1 w-full text-center">
+              <h2 className="text-2xl font-bold text-white line-clamp-2">
+                {player.first_name} {player.last_name}
+              </h2>
+              <span className="bg-charcoal-600 text-grey-400 px-2 py-0.5 rounded-md text-sm">
+                {player.position || 'N/A'}
+              </span>
             </div>
-            <div className="text-grey-500 text-sm text-center">
+            <div className="text-grey-500 text-sm text-center w-full">
               {player.team.full_name}
             </div>
+            
+            {/* Use the new separate PlayerGameStatus component */}
+            <PlayerGameStatus player={player} recentGames={recentGames} />
           </div>
         </div>
 

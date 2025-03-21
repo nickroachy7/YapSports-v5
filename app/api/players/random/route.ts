@@ -48,16 +48,38 @@ interface Game {
 
 export async function GET() {
   try {
-    // Get a list of active players
-    const response = await api.nba.getActivePlayers();
+    // Get a list of active players with pagination to get the complete list
+    let allActivePlayers: any[] = [];
+    let hasMorePlayers = true;
+    let cursor: number | null = null;
     
-    if (!response.data || response.data.length === 0) {
+    while (hasMorePlayers) {
+      const paginationParams = cursor !== null ? { cursor } : {};
+      const response = await api.nba.getActivePlayers({
+        ...paginationParams,
+        per_page: 100 // Maximum allowed to minimize API calls
+      });
+      
+      if (response.data && response.data.length > 0) {
+        allActivePlayers = [...allActivePlayers, ...response.data];
+      }
+      
+      if (response.meta && response.meta.next_cursor) {
+        cursor = response.meta.next_cursor as number;
+      } else {
+        hasMorePlayers = false;
+      }
+    }
+    
+    console.log(`Fetched a total of ${allActivePlayers.length} active players`);
+    
+    if (allActivePlayers.length === 0) {
       throw new Error('No active players found');
     }
 
-    // Select a random player from the list
-    const randomIndex = getRandomInt(0, response.data.length - 1);
-    const randomPlayer = response.data[randomIndex];
+    // Select a random player from the complete list
+    const randomIndex = getRandomInt(0, allActivePlayers.length - 1);
+    const randomPlayer = allActivePlayers[randomIndex];
 
     // Get season averages for the selected player
     const seasonAverages = await api.nba.getSeasonAverages({
