@@ -1,15 +1,36 @@
 export interface Game {
   id: number;
   date: string;
-  home_team: Team;
+  home_team: {
+    id: number;
+    abbreviation: string;
+    full_name: string;
+  };
   home_team_score: number;
-  period: number;
-  postseason: boolean;
-  season: number;
-  status: string;
-  time: string;
-  visitor_team: Team;
+  visitor_team: {
+    id: number;
+    abbreviation: string;
+    full_name: string;
+  };
   visitor_team_score: number;
+  played: boolean;
+  status?: string;
+  time?: string;
+  period?: number;
+  stats: {
+    pts: number;
+    reb: number;
+    ast: number;
+    stl?: number;
+    blk?: number;
+    min?: string;
+    fgm?: number;
+    fga?: number;
+    fg3m?: number;
+    fg3a?: number;
+    ftm?: number;
+    fta?: number;
+  } | null;
 }
 
 export interface Team {

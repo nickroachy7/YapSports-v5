@@ -322,6 +322,10 @@ export default function TestPlayerGameStatus() {
                   <span>{game.home_team.abbreviation} vs {game.visitor_team.abbreviation}</span>
                   <span>{game.status}</span>
                 </div>
+                <div className="text-grey-500 text-xs mt-1 italic flex justify-between">
+                  <span>Date field: {game.date}</span>
+                  <span>Status field: {game.status}</span>
+                </div>
               </div>
             ))}
             {getFilteredGames().length === 0 && (

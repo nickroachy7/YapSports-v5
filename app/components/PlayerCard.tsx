@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import PlayerGameStatus from './PlayerGameStatus';
+import PlayerGameStatus, { prefetchPlayerGameData } from './PlayerGameStatus';
 
 interface Game {
   id: number;
@@ -67,6 +67,14 @@ interface PlayerCardProps {
 
 export default function PlayerCard({ player, recentGames = [], collectorValue = 0, sellValue = 0 }: PlayerCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+
+  // Prefetch game data as soon as we get player info
+  useEffect(() => {
+    if (player?.team?.id) {
+      // Prefetch game data for this player's team
+      prefetchPlayerGameData(player.team.id);
+    }
+  }, [player?.team?.id]);
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);
@@ -155,7 +163,7 @@ export default function PlayerCard({ player, recentGames = [], collectorValue = 
       className="cursor-pointer"
       style={{
         width: '300px',
-        height: '500px', // Increased height to accommodate mini game log
+        height: '520px', // Increased from 500px to allow more space for game stats
         perspective: '1000px'
       }}
     >
@@ -171,8 +179,8 @@ export default function PlayerCard({ player, recentGames = [], collectorValue = 
           className="absolute w-full h-full bg-charcoal-700 rounded-xl overflow-hidden shadow-xl backface-hidden border-4 border-charcoal-500"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          {/* Player Photo Area */}
-          <div className="h-[70%] bg-charcoal-600 flex items-center justify-center relative">
+          {/* Player Photo Area - reduced from 60% to 58% */}
+          <div className="h-[58%] bg-charcoal-600 flex items-center justify-center relative">
             {/* Team logo placeholder with jersey number below it */}
             <div className="absolute top-3 left-3 flex flex-col items-center">
               <div className="w-12 h-12 bg-charcoal-700 rounded-full flex items-center justify-center mb-1">
@@ -214,23 +222,24 @@ export default function PlayerCard({ player, recentGames = [], collectorValue = 
               </svg>
             </div>
           </div>
-
-          {/* Player Info - Reduced height */}
-          <div className="p-4 flex flex-col items-center justify-center h-[30%]">
+          
+          <div className="p-2 flex flex-col items-center h-[42%]"> {/* Increased from 40% to 42% and reduced padding */}
             <div className="flex items-center justify-center gap-2 mb-1 w-full text-center">
-              <h2 className="text-2xl font-bold text-white line-clamp-2">
+              <h2 className={`font-bold text-white line-clamp-2 ${isLongName ? 'text-xl' : 'text-2xl'}`}>
                 {player.first_name} {player.last_name}
               </h2>
               <span className="bg-charcoal-600 text-grey-400 px-2 py-0.5 rounded-md text-sm">
                 {player.position || 'N/A'}
               </span>
             </div>
-            <div className="text-grey-500 text-sm text-center w-full">
+            <div className="text-grey-500 text-sm text-center w-full mb-1">
               {player.team.full_name}
             </div>
             
-            {/* Use the new separate PlayerGameStatus component */}
-            <PlayerGameStatus player={player} recentGames={recentGames} />
+            {/* Use the new separate PlayerGameStatus component with better spacing */}
+            <div className="w-full flex-grow overflow-hidden">
+              <PlayerGameStatus player={player} recentGames={recentGames} />
+            </div>
           </div>
         </div>
 

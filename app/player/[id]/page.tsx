@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Player } from '../../types/player';
 import GameLog from '../../components/player/GameLog';
+import PlayerGameStatus from '../../components/PlayerGameStatus';
 
 interface SeasonAverages {
   games_played: number;
@@ -323,6 +324,17 @@ export default function PlayerProfile() {
       </div>
 
       <div className="container mx-auto px-4 py-8 relative">
+        {/* Player Game Status */}
+        {player && playerDetails?.games && (
+          <div className="mb-6">
+            <PlayerGameStatus 
+              key={`player-game-status-${player.team?.id}-${params.id}`}
+              player={player} 
+              recentGames={playerDetails.games} 
+            />
+          </div>
+        )}
+        
         {/* Player Profile Header */}
         {player ? (
           <div className="bg-charcoal-700 rounded-xl shadow-lg p-6 mb-8">
