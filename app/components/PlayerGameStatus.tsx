@@ -85,8 +85,7 @@ export default function PlayerGameStatus({ player, recentGames = [] }: PlayerGam
   // Function to determine if a game is live
   const isGameLive = (game: Game): boolean => {
     // If period > 0 and there's no final result yet, the game is live
-    return (game.period && game.period > 0 && game.status !== "Final") || 
-           (typeof game.status === 'string' && game.status.toLowerCase().includes('live'));
+    return (game.period || 0) > 0 && game.status !== "Final";
   };
 
   // Function to determine if a game is finished
@@ -153,96 +152,53 @@ export default function PlayerGameStatus({ player, recentGames = [] }: PlayerGam
     const today = getTodayDate();
     const teamId = player.team.id;
     
-    // Find a live game first
-    const liveGame = recentGames.find(game => 
-      (game.home_team.id === teamId || game.visitor_team.id === teamId) && isGameLive(game)
+    // First, find any live games for the player's team
+    const liveGames = recentGames.filter(game => 
+      (game.home_team.id === teamId || game.visitor_team.id === teamId) && 
+      isGameLive(game)
     );
 
-    if (liveGame) {
-      setRelevantGame(liveGame);
+    // If there's a live game, that takes absolute priority
+    if (liveGames.length > 0) {
+      console.log('Found live game for player:', player.first_name, player.last_name);
+      setRelevantGame(liveGames[0]);
       setGameStatus('live');
       return;
     }
 
-    // Find the most recently completed game (within 3 hours)
-    const recentlyCompletedGames = recentGames
-      .filter(game => 
-        (game.home_team.id === teamId || game.visitor_team.id === teamId) && 
-        isGameFinished(game)
-      )
+    // Find recently finished games (within last 3 hours)
+    const recentlyFinishedGames = recentGames
+      .filter(game => {
+        if (!(game.home_team.id === teamId || game.visitor_team.id === teamId)) return false;
+        if (!isGameFinished(game)) return false;
+        
+        const gameDate = new Date(game.date);
+        const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
+        return gameDate > threeHoursAgo;
+      })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
-    if (recentlyCompletedGames.length > 0) {
-      const mostRecent = recentlyCompletedGames[0];
-      const gameEndTime = new Date(mostRecent.date);
-      // Assuming game length of ~2.5 hours on average
-      gameEndTime.setHours(gameEndTime.getHours() + 2.5);
-      
-      // If the game ended within the last 3 hours
-      const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
-      if (gameEndTime > threeHoursAgo) {
-        setRelevantGame(mostRecent);
-        setGameStatus('recent');
-        return;
-      }
+
+    if (recentlyFinishedGames.length > 0) {
+      console.log('Found recent finished game for player:', player.first_name, player.last_name);
+      setRelevantGame(recentlyFinishedGames[0]);
+      setGameStatus('recent');
+      return;
     }
 
-    // Find the next upcoming game by checking specific dates
-    // First, check today's games
-    const todayGames = findGamesOnDate(recentGames, teamId, today);
-    
-    if (todayGames.length > 0) {
-      // Sort by time if there are multiple games today (unlikely in NBA)
-      todayGames.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      setRelevantGame(todayGames[0]);
-      setGameStatus('upcoming');
-      return;
-    }
-    
-    // Find games in the next 7 days if no game today
-    const upcomingGames: Game[] = [];
-    
-    for (let i = 1; i <= 7; i++) {
-      const futureDate = new Date(today);
-      futureDate.setDate(today.getDate() + i);
-      
-      const gamesOnDate = findGamesOnDate(recentGames, teamId, futureDate);
-      upcomingGames.push(...gamesOnDate);
-      
-      if (upcomingGames.length > 0) break; // Stop once we find games
-    }
-    
-    // If we found upcoming games in the next 7 days
-    if (upcomingGames.length > 0) {
-      // Sort chronologically to get the very next game
-      upcomingGames.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      
-      console.log('Next upcoming game found for', player.first_name, player.last_name, upcomingGames[0]);
-      
-      setRelevantGame(upcomingGames[0]);
-      setGameStatus('upcoming');
-      return;
-    }
-    
-    // Fallback: look for any future games if we couldn't find any in the next 7 days
-    const allUpcomingGames = recentGames
-      .filter(game => 
-        (game.home_team.id === teamId || game.visitor_team.id === teamId) && 
-        isGameUpcoming(game)
-      )
+    // Find upcoming games starting with today
+    const upcomingGames = recentGames
+      .filter(game => {
+        if (!(game.home_team.id === teamId || game.visitor_team.id === teamId)) return false;
+        if (isGameLive(game) || isGameFinished(game)) return false;
+        
+        const gameDate = formatDateForComparison(game.date);
+        return gameDate >= today;
+      })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    console.log('All upcoming games for', player.first_name, player.last_name, ':', 
-      allUpcomingGames.map(g => ({
-        id: g.id,
-        date: g.date,
-        matchup: `${g.home_team.abbreviation} vs ${g.visitor_team.abbreviation}`,
-        is_upcoming_by_func: isGameUpcoming(g)
-      }))
-    );
-    
-    if (allUpcomingGames.length > 0) {
-      setRelevantGame(allUpcomingGames[0]);
+
+    if (upcomingGames.length > 0) {
+      console.log('Found upcoming game for player:', player.first_name, player.last_name);
+      setRelevantGame(upcomingGames[0]);
       setGameStatus('upcoming');
       return;
     }
