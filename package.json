@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@balldontlie/sdk": "^1.2.2",
+    "dotenv": "^16.4.7"
+  }
+}
