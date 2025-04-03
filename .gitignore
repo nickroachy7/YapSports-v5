@@ -1,6 +1,9 @@
 # Dependency directories
 node_modules/
-.npm
+
+# Build output
+dist/
+build/
 
 # Debug logs
 npm-debug.log*
@@ -14,16 +17,15 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Build output
-/dist
-/build
+# OS specific files
+.DS_Store
+Thumbs.db
 
 # IDE specific files
 .idea/
 .vscode/
-*.swp
-*.swo
-.DS_Store
+*.sublime-project
+*.sublime-workspace
 
-# Local project directories
+# YapSports-v5 subfolder (if it's a duplicate project)
 YapSports-v5/ 
